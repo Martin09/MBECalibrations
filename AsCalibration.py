@@ -2,19 +2,20 @@
 Performs an arsenic calibration and can also be used to read previous As calibration files
 """
 
-#TODO: create the script that will generate calibration files from the MBE
-#TODO: integrate this script into my growth recipes
-#TODO: create other scripts for the other elements that should be calibrated
+# TODO: create the script that will generate calibration files from the MBE
+# TODO: integrate this script into my growth recipes
+# TODO: create other scripts for the other elements that should be calibrated
 
 import ntpath
 from datetime import datetime
 from glob import glob
-from scipy.interpolate import Akima1DInterpolator
-from scipy.optimize import fsolve
+
 import matplotlib
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
+from scipy.interpolate import Akima1DInterpolator
+from scipy.optimize import fsolve
 
 matplotlib.style.use('ggplot')
 
@@ -38,7 +39,7 @@ class AsCalibration():
         self.pltaxis = self.plot_data(self.data, self.filename)
         self.fit_data(self.data)
 
-    def fit_data(self,data):
+    def fit_data(self, data):
         """
         Fits the calibration data with a spline for future interpolation
         :param data:
@@ -84,17 +85,17 @@ class AsCalibration():
         :param data: the data to be interpolated
         :return: spline interpolation function
         """
-        #Average the data points so there is only one y value per x value
+        # Average the data points so there is only one y value per x value
         spl_data = data.groupby(by='AsOpening').mean().reset_index()
         spl_x = np.array(spl_data['AsOpening'])
         spl_y = np.array(spl_data['BFM.P'])
-        #Sort in increasing x values
+        # Sort in increasing x values
         order = np.argsort(spl_x)
         spl_x = spl_x[order]
         spl_y = spl_y[order]
 
         # Create interpolation function
-        spl = Akima1DInterpolator(spl_x,spl_y)
+        spl = Akima1DInterpolator(spl_x, spl_y)
 
         return spl
 
@@ -104,9 +105,9 @@ class AsCalibration():
         :param desired_flux: Flux that you want to achieve
         :return: Proper opening amount of the As valve (0-100)
         """
-        #Need to "invert" the function: Given a y-value, what is the x-value that we need?
+        # Need to "invert" the function: Given a y-value, what is the x-value that we need?
         spl_inv = lambda x: self.spline_interp(x) - desired_flux
-        opening = fsolve(spl_inv,50)
+        opening = fsolve(spl_inv, 50)
         self.spline_interp_inv = spl_inv
 
         return opening
@@ -118,17 +119,17 @@ class AsCalibration():
         :title title: title of the plot
         :return: axis handle
         """
-        #Plot the data
-        ylim = [-1E-7,max(data['BFM.P'])*1.05]
-        ax = data.plot(x='AsOpening', y='BFM.P', style='.-', grid=True,logy=False,xlim=[-5,105],ylim=ylim)
+        # Plot the data
+        ylim = [-1E-7, max(data['BFM.P']) * 1.05]
+        ax = data.plot(x='AsOpening', y='BFM.P', style='.-', grid=True, logy=False, xlim=[-5, 105], ylim=ylim)
         ax.set_xlabel('As Opening %')
         ax.set_ylabel('Pressure')
         ax.set_title(title)
 
-        #Plot the interpolated function
-        x = np.linspace(0,100,101)
+        # Plot the interpolated function
+        x = np.linspace(0, 100, 101)
         y = self.spline_interp(x)
-        ax.plot(x,y,label='Interpolation')
+        ax.plot(x, y, label='Interpolation')
         ax.legend(loc='best')
 
         plt.show()
