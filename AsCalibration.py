@@ -20,7 +20,7 @@ from scipy.optimize import fsolve
 matplotlib.style.use('ggplot')
 
 
-class AsCalibration():
+class AsCalibration:
     """
     Class for reading a specific arsenic calibration file
     """
@@ -28,8 +28,9 @@ class AsCalibration():
     def __init__(self, filepath=None):
         """
         Initialize the calibration
-        :param filename: Filename of the desired calibration file to use, if none uses the latest calibration
+        :param filepath: Filename of the desired calibration file to use, if none uses the latest calibration
         """
+        self.spline_interp_inv = None
         if filepath is None:
             filepath = self.get_latest_file(directory='CalibrationFiles/')
         self.directory, self.filename = ntpath.split(filepath)
@@ -37,7 +38,6 @@ class AsCalibration():
         self.spline_interp = self.make_interpolator(self.data)
 
         self.pltaxis = self.plot_data(self.data, self.filename)
-        self.fit_data(self.data)
 
     def read_file(self, filename):
         """
@@ -48,13 +48,14 @@ class AsCalibration():
         data = pd.read_csv(filename, delimiter='\t', header=None, names=['AsOpening', 'BFM.P', 'MBE.P'])
         return data
 
-    def get_latest_file(self, directory):
+    def get_latest_file(self, directory=None):
         """
         Get latest calibration file
         :param directory: the directory where the calibration files are stored
         :return: full name and location of the latest calibration file
         """
-        directory = 'C:/Users/Martin Friedl/Documents/LMSC/Programming/MBECalibrations/CalibrationFiles/'
+        if directory is None:
+            directory = 'CalibrationFiles/'
         files = glob(directory + '/*_As.txt')  # Get all the relevant files in the directory
 
         files = [list(ntpath.split(filename)) for filename in
@@ -98,18 +99,19 @@ class AsCalibration():
         :param desired_flux: Flux that you want to achieve
         :return: Proper opening amount of the As valve (0-100)
         """
-        # Need to "invert" the function: Given a y-value, what is the x-value that we need?
-        spl_inv = lambda x: self.spline_interp(x) - desired_flux
-        opening = fsolve(spl_inv, 50)
-        self.spline_interp_inv = spl_inv
 
+        # Need to "invert" the function: Given a y-value, what is the x-value that we need?
+        def spl_inv(x): return self.spline_interp(x) - desired_flux
+
+        opening = fsolve(spl_inv, np.array(50.))
+        self.spline_interp_inv = spl_inv
         return opening
 
     def plot_data(self, data, title):
         """
         Plots the calibration data
+        :param title: title of the plot
         :param data: data to be plotted
-        :title title: title of the plot
         :return: axis handle
         """
         # Plot the data
