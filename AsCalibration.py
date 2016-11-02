@@ -39,13 +39,6 @@ class AsCalibration():
         self.pltaxis = self.plot_data(self.data, self.filename)
         self.fit_data(self.data)
 
-    def fit_data(self, data):
-        """
-        Fits the calibration data with a spline for future interpolation
-        :param data:
-        :return:
-        """
-
     def read_file(self, filename):
         """
         Read in the calibration file
