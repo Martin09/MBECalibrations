@@ -189,7 +189,7 @@ class ByteInterpreter:
 
     def get_time(self, row):
         timestamp = datetime.fromtimestamp(self.data["Time"][row])
-        return "{0:0=2}:{1:0=2}:{2:0=2}.{3:0=3}".format(timestamp.hour, timestamp.minute, \
+        return "{0:0=2}:{1:0=2}:{2:0=2}.{3:0=3}".format(timestamp.hour, timestamp.minute,
                                                         timestamp.second, timestamp.microsecond / 1000)
 
     #        return "".format(timestamp.hour)+":"+str(timestamp.minute)+":"+ \
@@ -351,7 +351,7 @@ class ByteConfig:
         if self.header == "":
             raise ValueError("Please give a correct header")
 
-        #        print self.header
+        # print self.header
 
         headerlist = re.split(r"\r\n", self.header)
         if headerlist[-1] == "":
@@ -396,7 +396,7 @@ class ByteConfig:
                     parameters = re.split(pattern5, re.search(pattern6, head).group(1))
                     if len(parameters) != m:
                         raise ValueError("Corrupted data")
-                    #                    parameters = ["."+i  for i in parameters]
+                    # parameters = ["."+i  for i in parameters]
                     names = [("", "") for i in elements]
                     for p, parameter in enumerate(parameters):
                         for k, element in enumerate(elements):
@@ -415,13 +415,13 @@ class ByteConfig:
                     for element in elements:
                         l.append((element, self.__findType(temp[2])))
 
-                    # This is the old part
-                    #                for k,element in enumerate(elements):
-                    #                    print element
-                    #                    for parameter in parameters:
-                    #                        print parameter
-                    #                        self.byteCount += calcByte(temp[2])
-                    #                        l.append((names[k][0]+parameter[0]+element+parameter[1]+names[k][1],self.__findType(temp[2])))
+                        # This is the old part
+                        #                for k,element in enumerate(elements):
+                        #                    print element
+                        #                    for parameter in parameters:
+                        #                        print parameter
+                        #                        self.byteCount += calcByte(temp[2])
+                        #                        l.append((names[k][0]+parameter[0]+element+parameter[1]+names[k][1],self.__findType(temp[2])))
             else:
                 self.byteCount += self.__calcByte(temp[2])
                 name = re.search(pattern2, head).group(1)
@@ -443,9 +443,9 @@ class ByteConfig:
                     index += 1
                 self.translate["Modify"][i].append(i + "." + j)
 
-            #        print self.translate["Modify"]
-            #        print l2
-            #
+                #        print self.translate["Modify"]
+                #        print l2
+                #
         l3 = []
         index = 0
         for i in l:
@@ -462,9 +462,9 @@ class ByteConfig:
             else:
                 l3.append(i)
                 self.translate["Copy"].update([i])
-            #
-            #        print l3
-            #        print self.translate
+                #
+                #        print l3
+                #        print self.translate
 
         self.dtype = np.dtype(l3)
         self.dtypefile = np.dtype(l).newbyteorder(">")
