@@ -2,9 +2,7 @@
 Performs an arsenic calibration and can also be used to read previous As calibration files
 """
 
-# TODO: create the script that will generate calibration files from the MBE
 # TODO: integrate this script into my growth recipes
-# TODO: create other scripts for the other elements that should be calibrated
 
 import ntpath
 from datetime import datetime
@@ -25,7 +23,7 @@ class AsCalibration:
     Class for reading a specific arsenic calibration file
     """
 
-    def __init__(self, filepath=None):
+    def __init__(self, filepath=None, plot=False):
         """
         Initialize the calibration
         :param filepath: Filename of the desired calibration file to use, if none uses the latest calibration
@@ -36,8 +34,10 @@ class AsCalibration:
         self.directory, self.filename = ntpath.split(filepath)
         self.data = self.read_file(filepath)
         self.spline_interp = self.make_interpolator(self.data)
+        self.plt_axis = None
 
-        self.pltaxis = self.plot_data(self.data, self.filename)
+        if plot:
+            self.plt_axis = self.plot_data(self.data, self.filename)
 
     def read_file(self, filename):
         """
@@ -45,7 +45,12 @@ class AsCalibration:
         :param filename: the filename to read in
         :return: data from the calibration file
         """
-        data = pd.read_csv(filename, delimiter='\t', header=None, names=['AsOpening', 'BFM.P', 'MBE.P'])
+
+        data = pd.read_csv(filename, delimiter='\t', header=None)  # First try with no headers
+        if any(isinstance(cell, str) for cell in data.loc[0]):  # If there is a header
+            data = pd.read_csv(filename, delimiter='\t', header=0)  # Import it properly
+
+        data.columns = ['AsOpening', 'BFM.P', 'MBE.P']  # Rename dataframe columns
         return data
 
     def get_latest_file(self, directory=None):
@@ -100,8 +105,15 @@ class AsCalibration:
         :return: Proper opening amount of the As valve (0-100)
         """
 
+        # TODO: Add the possibility to extrapolate outside fitting range?
+        if desired_flux >= self.data['BFM.P'].max():
+            raise ValueError('The desired flux is outside of the calibration range!')
+        elif desired_flux <= self.data['BFM.P'].min():
+            raise ValueError('The desired flux is outside of the calibration range!')
+
         # Need to "invert" the function: Given a y-value, what is the x-value that we need?
-        def spl_inv(x): return self.spline_interp(x) - desired_flux
+        def spl_inv(x):
+            return self.spline_interp(x) - desired_flux
 
         opening = fsolve(spl_inv, np.array(50.))
         self.spline_interp_inv = spl_inv
@@ -132,5 +144,5 @@ class AsCalibration:
 
 
 if __name__ == '__main__':
-    fn = 'CalibrationFiles/2016-08-17_01-24-16_As.txt'
-    calib = AsCalibration(fn)
+    # fn = 'CalibrationFiles/2016-08-17_01-24-16_As.txt'
+    calib = AsCalibration()
