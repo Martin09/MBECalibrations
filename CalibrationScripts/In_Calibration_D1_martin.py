@@ -10,9 +10,9 @@ from MBE_Tools import ServerConnection
 
 
 # Short calibration
-values = np.linspace(900, 960, 7)
+values = np.linspace(770, 830, 7)
 # Long calibration
-# values = np.linspace(900, 960, 13)
+# values = np.linspace(770, 830, 13)
 
 t_stabilize = 6 * 60  # 6 minutes
 t_shutter_stabilize = 1 * 60  # 1 minute
@@ -20,8 +20,8 @@ t_shutter_stabilize = 1 * 60  # 1 minute
 #################################
 # Modify this for each material
 #################################
-mat = "Ga"
-standby_value = 550
+mat = "In"
+standby_value = 515
 #################################
 
 # filename=r"C:\Users\epfl\Calibrations\2013-04-08_As_Flux1.txt"
